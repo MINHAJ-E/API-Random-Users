@@ -2,6 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart'as http;
+import 'package:provider/provider.dart';
+import 'package:random_users_api_2/model/model.dart';
+import 'package:random_users_api_2/services/api_services.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,44 +14,39 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<dynamic> useres=[];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Provider.of<ApiServicesProvider>(context,listen: false).fetchUsers();
+  }
+  // List<dynamic> useres=[];
 
   @override
   Widget build(BuildContext context) {
+  
     return Scaffold(
       appBar: AppBar(
         title: Text("Random Useres"),
         backgroundColor: Colors.amber,
       ),
-      body: ListView.builder(
-        itemCount: useres.length,
-        itemBuilder: (context,index){
-        final user=useres[index];
-        final email=user['email'];
-        final name=user['name']['first'];
-        final imageurl=user['picture']['thumbnail'];
-        return ListTile(
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(100),
-            child: Image.network(imageurl)),
-            title: Text(name.toString(),style: TextStyle(color: Colors.red),),
-            subtitle: Text(email),
-        );
-      }),
-      floatingActionButton: FloatingActionButton(onPressed: fetchUsers),
+      body: Consumer<ApiServicesProvider>(builder: (context,pro,child)=>
+        ListView.builder(
+          itemCount: pro.useres.length,
+          itemBuilder: (context,index){
+          Model user=pro.useres[index];
+          // final email=user['email'];
+          // final name=user['name']['first'];
+          // final imageurl=user['picture']['thumbnail'];
+          return ListTile(
+              title: Text(user.gender.toString(),style: TextStyle(color: Colors.red),),
+              subtitle: Text(user.email),
+          );
+        }),
+      ),
+      
+      
     );
-  }
-
-  void fetchUsers()async{
-    const url="https://randomuser.me/api/?results=10";
-    final uri=Uri.parse(url);
-    final response= await http.get(uri);
-    final body=response.body;
-    final json=jsonDecode(body);
-    setState(() {
-      useres=json['results'];
-    });    
-      print("fetchuserse completeeted");
-
   }
 }
